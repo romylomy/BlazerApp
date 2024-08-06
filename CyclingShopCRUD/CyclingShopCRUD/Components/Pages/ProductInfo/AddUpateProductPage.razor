@@ -1,0 +1,105 @@
+﻿@page "/addupdateproduct"
+@page "/updateproduct/{ProductId:int}"
+
+@using CyclingShopCRUD.Services.ProductService
+@using CyclingShopCRUD.data
+@inject IProductRepository _productRepository
+@inject NavigationManager navigationManager
+
+
+<h3>Add Upate Product Page</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Product Id: </label>
+            <input type="text" @bind="productId" class="form-control" placeholder="Product id" readonly/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Product Name: </label>
+            <input type="text" @bind="productName" class="form-control" placeholder="Product Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Product Quantity: </label>
+            <input type="text" @bind="prodQty" class="form-control" placeholder="Product Quantity" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Product Price: </label>
+            <input type="text" @bind="prodPrice" class="form-control" placeholder="Product Price" />
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-success" @onclick="AddProductInfo">Submit</button>
+        <button type="submit" class="btn btn-sm btn-info" @onclick="BackToList">Back</button>
+
+
+
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int ProductId { get; set; }
+
+    private int productId =0;
+    private string productName = "";
+    private int prodQty = 0;
+    private decimal prodPrice = 0; 
+
+    protected async override void OnInitialized()
+    {
+        base.OnInitialized();
+        productId = ProductId; 
+
+        if(productId > 0){
+            var response = await _productRepository.GetProductAsync(productId);
+            productName = response.ProdName;
+            prodQty = response.ProdQty;
+            prodPrice = response.ProdPrice; 
+            this.StateHasChanged(); 
+        }
+
+    }
+
+    public async void AddProductInfo(){
+        var prod = new ProductInfo();
+        prod.ProdId = productId; 
+        prod.ProdName = productName;
+        prod.ProdQty = prodQty;
+        prod.ProdPrice = prodPrice;
+
+        var response = await _productRepository.AddUpdateProductAsync(prod); 
+        if (response){
+            if(productId == 0)
+            {
+                await App.Current.MainPage.DisplayAlert("saved ", "Save Success", "Ok");
+            }
+
+            else
+            {
+                await App.Current.MainPage.DisplayAlert("Updated", "Updates Sucuess", "Ok"); 
+
+            }
+
+        }
+        else{
+            await App.Current.MainPage.DisplayAlert("Saved", "Save failed", "Ok");
+        }
+
+        
+
+        
+    }
+
+    public void BackToList()
+    {
+        navigationManager.NavigateTo("prodlist");
+
+    }
+
+
+}

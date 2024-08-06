@@ -1,0 +1,70 @@
+﻿@page "/prodlist"
+@using CyclingShopCRUD.Services.ProductService
+@using CyclingShopCRUD.data
+@inject IProductRepository _productRepository
+@inject NavigationManager navigationManager
+
+<h3>Product List</h3>
+
+@if (prodList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="AddNewProduct">Add new</button>
+    <table class="table table-stripped">
+        <thead>
+            <tr>
+                <th>ProdId</th>
+                <th>ProdName. (C)</th>
+                <th>ProdQty. (F)</th>
+                <th>ProdPrice</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var prod in prodList)
+            {
+                <tr>
+                    <td>@prod.ProdId</td>
+                    <td>@prod.ProdName</td>
+                    <td>@prod.ProdQty</td>
+                    <td>@prod.ProdPrice</td>
+                    <td>
+                        <button class="btn btn-info" @onclick=@(() => UdpatedProduct(prod))>Edit</button>
+                        <button class="btn btn-danger" @onclick=@(() => DeleteProduct(prod))>Delete</button>
+                    </td>
+                </tr>
+               
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private IEnumerable<ProductInfo> prodList;
+    protected override async Task OnInitializedAsync()
+    {
+        prodList = await _productRepository.GetProductAsync(); 
+
+    }
+
+    public void AddNewProduct(){
+        navigationManager.NavigateTo("addupdateproduct");
+
+    }
+
+    public void UdpatedProduct(ProductInfo productInfo){
+        navigationManager.NavigateTo($"updateproduct/{productInfo.ProdId}");
+
+
+    }
+
+    public async void DeleteProduct(ProductInfo productInfo){
+        await _productRepository.DeleteProductAsync(productInfo.ProdId);
+        prodList = await _productRepository.GetProductAsync();
+        this.StateHasChanged(); 
+    }
+
+}
